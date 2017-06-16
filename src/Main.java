@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 /**
  * Runs the ServerPool and lets user turn server off.
- * This application works like a chat group.
+ * This is a chat group application.
  * All connected clients will receive any possible sent message from others.
  */
 public class Main {
@@ -20,7 +20,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String userInput;
         do {
-            System.out.println("Type " + SERVER_EXIT + "to turn server off > ");
+            System.out.println("Type " + SERVER_EXIT + " to turn server off > ");
             userInput = scanner.next();
         }
         while (!userInput.equals(SERVER_EXIT));

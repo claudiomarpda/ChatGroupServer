@@ -1,6 +1,7 @@
 package business.control;
 
-import java.io.DataOutputStream;
+import business.model.Client;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,51 +9,60 @@ import java.util.List;
 /**
  * Created by mz on 13/06/17.
  * <p>
- * Mediator han an output stream to every client so it can send data to all of them.
+ * Mediator has a list of clients so it can use their connections and streams.
+ * It can send message to all clients, when notified.
  */
 public class ClientMediator implements Mediator {
 
-    private List<DataOutputStream> streamList;
+    private List<Client> clientList;
 
     public ClientMediator() {
-        streamList = new ArrayList<>();
-    }
-
-    @Override
-    public void addOutputStream(DataOutputStream stream) {
-        streamList.add(stream);
+        clientList = new ArrayList<>();
     }
 
     /**
      * Sends a message through every stream.
-     * @param message received from Server.
+     *
+     * @param message from Server and its client.
      */
     @Override
     public void sendMessage(String message) {
-        System.out.println("sending for " + streamList.size() + " client(s)");
-        for (DataOutputStream o : streamList) {
+        System.out.println("sending for " + clientList.size() + " client(s)");
+        for (Client c : clientList) {
             try {
-                o.writeUTF(message);
+                c.outputStream.writeUTF(message);
             } catch (IOException e) {
                 // in case something is wrong with the stream
                 // removes it from the list
-                streamList.remove(o);
-                System.out.println("Stream removed");
+                c.closeConnections();
+                clientList.remove(c);
+                System.out.println("Client removed");
             }
         }
     }
 
     @Override
-    public void closeAllStreams() throws IOException {
-        for (DataOutputStream o : streamList) {
-            o.close();
+    public void closeAllConnections() throws IOException {
+        /*
+        Avoids ConcurrentModificationException, even though only one thread is calling it.
+        Synchronizing solves the problem, but it has low performance.
+         */
+        synchronized (this) {
+            for (Client c : clientList) {
+                c.closeConnections();
+            }
         }
     }
 
     @Override
-    public void removeOutputStream(DataOutputStream stream) {
-        if (streamList != null) {
-            streamList.remove(stream);
+    public void addClient(Client client) {
+        clientList.add(client);
+    }
+
+    @Override
+    public void removeClient(Client client) {
+        if (clientList != null) {
+            clientList.remove(client);
         }
     }
 }

@@ -1,5 +1,7 @@
 package business.control;
 
+import business.model.Client;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -43,7 +45,7 @@ public class ServerPool implements Runnable {
                 System.out.println("Waiting for connections...");
                 Socket inputSocket = inputServerSocket.accept();
                 Socket outputSocket = outputServerSocket.accept();
-                executor.execute(new Server(inputSocket, outputSocket, mediator));
+                executor.execute(new Server(new Client(inputSocket, outputSocket), mediator));
                 System.out.println("Received connection from " + inputSocket.getInetAddress());
             }
         } catch (SocketException e) {
@@ -66,7 +68,7 @@ public class ServerPool implements Runnable {
             if (outputServerSocket != null) {
                 outputServerSocket.close();
             }
-            mediator.closeAllStreams();
+            mediator.closeAllConnections();
         } catch (IOException e) {
             e.printStackTrace();
         }

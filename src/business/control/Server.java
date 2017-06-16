@@ -1,9 +1,8 @@
 package business.control;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import business.model.Client;
+
 import java.io.IOException;
-import java.net.Socket;
 
 /**
  * Created by mz on 12/06/17.
@@ -14,36 +13,23 @@ import java.net.Socket;
 public class Server implements Runnable {
 
     private static final String CHAT_EXIT = "EXIT";
-
-    private DataInputStream dis; // to receive data
-    private DataOutputStream dos; // to send data
     private Mediator mediator; // sends message to all clients
-    private String clientIpAddress;
+    private Client client;
 
-    /**
-     * Instantiated by ServerPool from a new client.
-     *
-     * @param inputSocket  provides input stream
-     * @param outputSocket provides output stream
-     * @param mediator     notifies all clients
-     * @throws IOException when streams go wrong
-     */
-    public Server(Socket inputSocket, Socket outputSocket, Mediator mediator) throws IOException {
-        dis = new DataInputStream(inputSocket.getInputStream());
-        dos = new DataOutputStream(outputSocket.getOutputStream());
+    public Server(Client client, Mediator mediator) {
+        this.client = client;
         this.mediator = mediator;
-        // stream from which all clients can be notified at once
-        this.mediator.addOutputStream(dos);
-        clientIpAddress = inputSocket.getInetAddress().toString();
+        mediator.addClient(client);
     }
 
     @Override
     public void run() {
         String receivedMessage;
+        String clientIpAddress = client.inputSocket.getInetAddress().toString();
         try {
             // receives random messages
             do {
-                receivedMessage = dis.readUTF(); // waits until get a message
+                receivedMessage = client.inputStream.readUTF(); // waits until get a message
                 System.out.println("Received message: " + receivedMessage);
 
                 // tells mediator that has received a message
@@ -53,7 +39,7 @@ public class Server implements Runnable {
             // loop condition must be changed according to business rules
             while (!receivedMessage.equals(CHAT_EXIT));
         } catch (IOException e) {
-            mediator.removeOutputStream(dos);
+            mediator.removeClient(client);
             System.out.println("Connection finished");
         }
     }
