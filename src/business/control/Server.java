@@ -10,13 +10,13 @@ import java.io.IOException;
  * Handles communication with a single client.
  * It has a thread to receive messages and notify the Mediator
  */
-public class Server implements Runnable {
+class Server implements Runnable {
 
     private static final String CHAT_EXIT = "EXIT";
     private Mediator mediator; // sends message to all clients
     private Client client;
 
-    public Server(Client client, Mediator mediator) {
+    Server(Client client, Mediator mediator) {
         this.client = client;
         this.mediator = mediator;
         mediator.addClient(client);

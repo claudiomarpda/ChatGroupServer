@@ -52,4 +52,8 @@ public class Client {
             e.printStackTrace();
         }
     }
+
+    public String getAddress() {
+        return inputSocket.getInetAddress().toString();
+    }
 }

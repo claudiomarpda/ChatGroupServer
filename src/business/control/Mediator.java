@@ -3,6 +3,7 @@ package business.control;
 import business.model.Client;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Created by mz on 13/06/17.
@@ -18,4 +19,6 @@ public interface Mediator {
     void sendMessage(String message);
 
     void closeAllConnections() throws IOException;
+
+    Iterator<String> getClientsAddress();
 }

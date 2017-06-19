@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -14,13 +15,14 @@ import java.util.concurrent.Executors;
  * <p>
  * Provides a multi thread server for a Chat application.
  * ServerPool can receive several connections and initiates a server for every new client.
+ * All connected clients will receive any message sent from others clients.
  */
 public class ServerPool implements Runnable {
 
     private final int INPUT_PORT = 4444;
     private final int OUTPUT_PORT = 4445;
 
-    private Executor executor;
+    private ExecutorService executor;
     private ServerSocket inputServerSocket;
     private ServerSocket outputServerSocket;
     private boolean serverOn;
@@ -57,9 +59,10 @@ public class ServerPool implements Runnable {
     }
 
     /**
-     * Turns server pool and its listening sockets off .
+     * Closes server pool and its listening sockets.
      */
-    public void turnOff() {
+    public void close() {
+        executor.shutdownNow();
         serverOn = false;
         try {
             if (inputServerSocket != null) {
@@ -72,5 +75,10 @@ public class ServerPool implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void printClientsAddress() {
+        System.out.println("Printing address of all connected clients");
+        mediator.getClientsAddress().forEachRemaining(System.out::println);
     }
 }

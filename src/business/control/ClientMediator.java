@@ -4,15 +4,16 @@ import business.model.Client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by mz on 13/06/17.
  * <p>
- * Mediator has a list of clients so it can use their connections and streams.
+ * Mediator has a collection of clients so it can use their connections and streams.
  * It can send message to all clients, when notified.
  */
-public class ClientMediator implements Mediator {
+class ClientMediator implements Mediator {
 
     private List<Client> clientList;
 
@@ -21,13 +22,12 @@ public class ClientMediator implements Mediator {
     }
 
     /**
-     * Sends a message through every stream.
+     * Sends a message through every client stream.
      *
      * @param message from Server and its client.
      */
     @Override
     public void sendMessage(String message) {
-        System.out.println("sending for " + clientList.size() + " client(s)");
         for (Client c : clientList) {
             try {
                 c.outputStream.writeUTF(message);
@@ -35,22 +35,14 @@ public class ClientMediator implements Mediator {
                 // in case something is wrong with the stream
                 // removes it from the list
                 c.closeConnections();
-                clientList.remove(c);
-                System.out.println("Client removed");
             }
         }
     }
 
     @Override
     public void closeAllConnections() throws IOException {
-        /*
-        Avoids ConcurrentModificationException, even though only one thread is calling it.
-        Synchronizing solves the problem, but it has low performance.
-         */
-        synchronized (this) {
-            for (Client c : clientList) {
-                c.closeConnections();
-            }
+        for (Client c : clientList) {
+            c.closeConnections();
         }
     }
 
@@ -64,5 +56,10 @@ public class ClientMediator implements Mediator {
         if (clientList != null) {
             clientList.remove(client);
         }
+    }
+
+    @Override
+    public Iterator<String> getClientsAddress() {
+        return clientList.stream().map(Client::getAddress).iterator();
     }
 }
